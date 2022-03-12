@@ -23,7 +23,7 @@ LD = ld
 
 BIN = $(MAKE_DIR)/build/bin/cgit
 
-LIBS :=
+LIBS := -lz -lssl -lcrypto
 
 CFLAGS := -std=gnu99 -pedantic
 CFLAGS += $(INC_SRCH_PATH) $(LIB_SRCH_PATH)

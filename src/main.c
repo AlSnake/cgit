@@ -1,62 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
-
+#include "cgit/cmd.h"
 #include <clog/clog.h>
 
-static int mkdir_p(const char *path, mode_t mode)
+int main(int argc, char **argv)
 {
-	char *tmp = strndup(path, 256);
-	size_t len = strlen(tmp);
-	char *p = NULL;
+	if (argc <= 1) {
+		printf("%s [cmd][arg]\n", argv[0]);
+		return 0;
+	}
 
-	if (tmp[len - 1] == '/')
-		tmp[len - 1] = 0;
+	if (!strcmp("init", argv[1])) {
+		printf("CGIT INITALIZING\n");
+		int ret = cgit_init();
+		if (ret != 0)
+			printf("failed to initalize cgit");
+		return ret;
+	}
 
-	for (p = tmp + 1; *p; p++) {
-		if (*p == '/') {
-			*p = 0;
-			mkdir(tmp, mode);
-			*p = '/';
+	if (!strcmp("add", argv[1])) {
+		if (argc < 3) {
+			printf("Specify [FILE]\n");
+			return 0;
 		}
+		int ret = cgit_add(argv[2]);
+		if (ret != 0)
+			printf("failed to add %s", argv[2]);
+		return ret;
 	}
-
-	int ret = mkdir(tmp, mode);
-	free(tmp);
-	return ret;
-}
-
-int cgit_init(void)
-{
-	if (mkdir_p(".git/objects", S_IRWXU) == -1)
-		perror("mkdir");
-
-	if (mkdir_p(".git/refs", S_IRWXU) == -1)
-		perror("mkdir");
-
-	if (mkdir_p(".git/refs", S_IRWXU) == -1)
-		perror("mkdir");
-
-	FILE *fhead = fopen(".git/HEAD", "w+");
-	if (!fhead) {
-		printf("failed to open .git/HEAD");
-		return -1;
-	}
-
-	fprintf(fhead, "ref: refs/heads/master\n");
-	fclose(fhead);
-	return 0;
-}
-
-int main(void)
-{
-	if (cgit_init() == -1) {
-		printf("CGIT INIT FAILED\n");
-		return 1;
-	}
-
-	printf("CGIT INITALIZED\n");
 
 	return 0;
 }
